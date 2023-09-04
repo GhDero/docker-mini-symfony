@@ -1,0 +1,44 @@
+version: '3'
+
+networks:
+  fullstack:
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./symfony:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - fullstack
+
+  mariaDB:
+    image: mariadb:latest
+    container_name: mariadb
+    volumes:
+      - ./database:/var/lib/mysql:rw
+    ports:
+      - "3306:3306"
+    depends_on:
+      - nginx
+    environment:
+      - MYSQL_ROOT_PASSWORD=654321
+    networks:
+      - fullstack
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php
+    volumes:
+      - ./symfony:/var/www/html
+    ports:
+      - "9000:9000"
+    networks:
+      - fullstack
